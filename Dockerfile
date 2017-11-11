@@ -1,10 +1,10 @@
 FROM circleci/python:latest
 
 ENV SUMO_VERSION 0_31_0
-ENV PYTHON_VERSION 3.6.3
 ENV SUMO_HOME /opt/sumo
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
 ENV PYTHON_PIP_VERSION 9.0.1
+ENV PYTHON_VERSION 3.6.3
 
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:$PATH
@@ -14,69 +14,44 @@ ENV PATH /usr/local/bin:$PATH
 ENV LANG C.UTF-8
 ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 
-# build essential
-RUN sudo apt-get update && sudo apt-get install -y build-essential
-
-# runtime dependencies
-RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-        tcl \
-        tk \
-    && sudo rm -rf /var/lib/apt/lists/*
-
-RUN set -ex \
-    && buildDeps=' \
-        dpkg-dev \
-        tcl-dev \
-        tk-dev \
-    ' \
-    && sudo apt-get update && sudo apt-get install -y $buildDeps --no-install-recommends && sudo rm -rf /var/lib/apt/lists/* \
-    && cd /tmp \
-    && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
-    && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY" \
-    && gpg --batch --verify python.tar.xz.asc python.tar.xz \
-    && rm -rf "$GNUPGHOME" python.tar.xz.asc \
-    && mkdir -p /tmp/src/python \
-    && tar -xJC /tmp/src/python --strip-components=1 -f python.tar.xz \
-    && rm python.tar.xz \
-    && cd /tmp/src/python \
-    && gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
-    && ./configure \
-        --build="$gnuArch" \
+WORKDIR /tmp
+RUN wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz"
+RUN wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc"
+RUN export GNUPGHOME="$(mktemp -d)"
+RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY"
+RUN gpg --batch --verify python.tar.xz.asc python.tar.xz
+RUN rm -rf "$GNUPGHOME" python.tar.xz.asc
+RUN mkdir -p /tmp/src/python
+RUN tar -xJC /tmp/src/python --strip-components=1 -f python.tar.xz
+RUN rm python.tar.xz
+WORKDIR /tmp/src/python
+RUN ./configure \
         --enable-loadable-sqlite-extensions \
         --enable-shared \
         --with-system-expat \
         --with-system-ffi \
-        --enable-optimizations \
-    && make -j "$(nproc)" \
-    && sudo make install \
-    && sudo ldconfig \
-    && sudo apt-get purge -y --auto-remove $buildDeps \
-    && find /usr/local -depth \
-        \( \
-            \( -type d -a \( -name test -o -name tests \) \) \
-            -o \
-            \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
-        \) -exec sudo rm -rf '{}' + \
-    && sudo rm -rf /tmp/src/python
+        --enable-optimizations
+RUN make -j "$(nproc)"
+RUN sudo make altinstall
 
-# make some useful symlinks that are expected to exist
-RUN cd /usr/local/bin \
-    && sudo ln -sf idle3 idle \
-    && sudo ln -sf pydoc3 pydoc \
-    && sudo ln -sf python3 python \
-    && sudo ln -sf python3-config python-config
+# test for python
+RUN python -V
+RUN python3 -V
+RUN python2 -V
 
+# test for pip
+RUN pip3 -V
 
-# Install system dependencies.
+# build essential
+RUN sudo apt-get update && sudo apt-get install -y build-essential
+
+# Install SUMO dependencies
 RUN sudo apt-get update && sudo apt-get install -qq \
     wget \
     g++ \
     make \
     libxerces-c3.1 \
     libxerces-c3-dev \
-    python \
     libproj-dev \
     proj-bin \
     proj-data \
@@ -87,18 +62,19 @@ RUN sudo apt-get update && sudo apt-get install -qq \
     libfox-1.6-dev \
     autoconf
 
-# test for pip
-RUN pip3
-
 # Download and extract source code
 RUN wget https://github.com/DLR-TS/sumo/archive/v$SUMO_VERSION.tar.gz -O /tmp/$SUMO_VERSION.tar.gz
-RUN tar xzf /tmp/$SUMO_VERSION.tar.gz -C /tmp && \
-    sudo mv /tmp/sumo-$SUMO_VERSION/sumo $SUMO_HOME && \
-    rm -rf /tmp/sumo-$SUMO_VERSION && \
-    rm /tmp/$SUMO_VERSION.tar.gz
+RUN tar xzf /tmp/$SUMO_VERSION.tar.gz -C /tmp
+RUN sudo mv /tmp/sumo-$SUMO_VERSION/sumo $SUMO_HOME
+RUN rm -rf /tmp/sumo-$SUMO_VERSION
+RUN rm /tmp/$SUMO_VERSION.tar.gz
 
 # Configure and build from source.
-RUN cd $SUMO_HOME && make -f Makefile.cvs && ./configure && sudo make install -j8
+WORKDIR $SUMO_HOME
+RUN make -f Makefile.cvs
+RUN ./configure
+RUN make -j "$(nproc)"
+RUN sudo make install
 
 # Ensure the installation works. If this call fails, the whole build will fail.
 RUN sumo
