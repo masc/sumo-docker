@@ -5,7 +5,7 @@ A Docker base image for the [SUMO](http://sumo.dlr.de/wiki/Main_Page) traffic si
 
 Run with Docker
 -------------
-This uses an automated build on Dockerhub: https://hub.docker.com/r/farberg/sumo-docker/ so you don't have to build the image for yourself.
+This uses an automated build on Dockerhub: https://hub.docker.com/r/socialcars/sumo-docker/ so you don't have to build the image for yourself.
 
 This Dockerfile uses Docker's concept of [volumes](https://docs.docker.com/v1.10/engine/userguide/containers/dockervolumes/) where you make one or more folders on your host computer available inside the docker container. The paths of these volumes are specificed in the [Dockerfile](Dockerfile). In this case, you can make a folder on your host computer available as ```/data``` in the Docker container. 
 
@@ -13,7 +13,7 @@ For example, if you have your SUMO files stored in the folder ```/some/local/pat
 
 This command illustrates this:
 ```
-docker run --rm -t -i -p 1234:1234 -v /some/local/path/to/your/data:/data farberg/sumo-docker
+docker run --rm -t -i -p 1234:1234 -v /some/local/path/to/your/data:/data socialcars/sumo-docker
 ```
 
 Control SUMO via TraCi
@@ -37,3 +37,7 @@ A Java API for TraCI is available [here](https://github.com/egueli/TraCI4J).
 
 An example application that uses TraCI4J is available [here](https://github.com/pfisterer/sumo-traci-demo).
 
+Credits
+-------------
+
+Based on work done by [pfisterer](https://github.com/pfisterer) and [farberg](https://hub.docker.com/u/farberg/).
