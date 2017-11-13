@@ -23,7 +23,7 @@ Use the following command if you want to control SUMO using the [Traffic Control
 ```
 docker run -t -i --rm -p 1234:1234 \
 	-v /some/local/path/to/your/data:/data \
-	farberg/sumo-docker \
+	socialcars/sumo-docker \
 	-c /data/cologne.sumocfg \
 	--remote-port 1234 \
 	-v
