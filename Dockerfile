@@ -33,7 +33,8 @@ RUN sudo apt-get update && sudo apt-get install -qq \
     ssh-client \
     git \
     maven \
-    openjdk-8-jdk
+    openjdk-8-jdk \
+    golang-go
 
 # Download and extract source code
 RUN wget https://github.com/DLR-TS/sumo/archive/v$SUMO_VERSION.tar.gz -O /tmp/$SUMO_VERSION.tar.gz
