@@ -3,7 +3,8 @@ FROM circleci/python:3.6.3-stretch
 ENV SUMO_VERSION 0_31_0
 ENV SUMO_HOME /opt/sumo
 
-ENV PATH /usr/local/bin:$PATH
+ENV PATH /usr/local/bin:~/go/bin:$PATH
+ENV GOPATH ~/go
 
 # test for python
 RUN python -V
