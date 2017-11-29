@@ -4,7 +4,7 @@ ENV SUMO_VERSION 0_31_0
 ENV SUMO_HOME /opt/sumo
 
 ENV PATH /usr/local/bin:~/go/bin:$PATH
-ENV GOPATH ~/go
+ENV GOPATH $HOME/go
 
 # test for python
 RUN python -V
