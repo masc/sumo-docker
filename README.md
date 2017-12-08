@@ -1,5 +1,9 @@
 # SUMO Docker Base Image
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/socialcars/sumo-docker.svg)](https://hub.docker.com/r/socialcars/sumo-docker/)
+[![Docker Automated build](https://img.shields.io/docker/automated/socialcars/sumo-docker.svg)](https://hub.docker.com/r/socialcars/sumo-docker/~/settings/automated-builds/)
+[![Docker Build Status](https://img.shields.io/docker/build/socialcars/sumo-docker.svg)](https://hub.docker.com/r/socialcars/sumo-docker/builds/)
+
 A Docker base image for the [SUMO](http://sumo.dlr.de/wiki/Main_Page) traffic simulation package. SUMO (Simulation of Urban MObility) is an open source, highly portable, microscopic and continuous road traffic simulation package designed to handle large road networks.
 
 ## Run with Docker
